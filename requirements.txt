@@ -1,0 +1,6 @@
+httpx==0.28.1
+mcp==1.10.1
+pycryptodome==3.23.0
+python-dotenv==1.1.1
+requests==2.32.4
+uvicorn==0.35.0
