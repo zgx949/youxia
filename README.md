@@ -28,11 +28,14 @@
         "youxia": {
             "command": "uv",
             "args": [
-                "--directory",
-                "/ABSOLUTE/PATH",
                 "run",
                 "mcp-server.py"
-            ]
+            ],
+          "env": {
+            "APP_KEY": "sk-your-api-key-here",
+            "APP_SECRET": "sk-your-api-secret-here",
+            "BASE_URL": "sk-your-api-url-here"
+          }
         }
     }
 }
