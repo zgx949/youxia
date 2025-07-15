@@ -21,4 +21,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["config", "hotels", "mcp-server"]
+py-modules = ["config", "hotels", "mcp_server"]
