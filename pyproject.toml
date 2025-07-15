@@ -2,6 +2,7 @@
 name = "xiayou"
 version = "0.1.0"
 description = "Add your description here"
+authors = [{ name = "Greyson Zheng", email = "greyson949z@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -11,3 +12,13 @@ dependencies = [
     "requests>=2.32.4",
     "uvicorn>=0.35.0",
 ]
+
+[project.scripts]
+mcp-server = "mcp_server:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["config", "hotels", "mcp-server"]

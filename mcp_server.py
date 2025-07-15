@@ -30,6 +30,11 @@ async def query_hotel_room_details(hotel_id: int, checkin_date: str, checkout_da
     data = hotels.get_room_price(hotel_id, checkin_date, checkout_date)
     return data
 
-if __name__ == "__main__":
+
+def main():
     # Initialize and run the server
-    mcp.run(transport='stdio')
+    mcp.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    main()
