@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>搜索结果</title>
+  <style>
+    body { font-family: sans-serif; background: #f2f2f2; padding: 40px; }
+    .container { max-width: 800px; margin: auto; }
+    h2 { margin-bottom: 20px; }
+    .hotel-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hotel-info {
+      max-width: 70%;
+    }
+    .hotel-info h3 { margin: 0 0 10px; }
+    .hotel-info p { margin: 4px 0; color: #666; }
+    .btn {
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .btn:hover { background: #218838; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>搜索结果</h2>
+    <div id="result-list"></div>
+  </div>
+</body>
+
+<script>
+  // 解析 URL 参数
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  const keyword = getQueryParam('key');
+  if (!keyword) {
+    document.getElementById('result-list').innerHTML = '<p>缺少关键词参数。</p>';
+  } else {
+    fetch('http://127.0.0.1:5000/search?key=' + encodeURIComponent(keyword))
+      .then(res => res.json())
+      .then(data => {
+        const list = data.results || [];
+        const container = document.getElementById('result-list');
+        if (!list.length) {
+          container.innerHTML = '<p>没有找到结果。</p>';
+          return;
+        }
+        list.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'hotel-card';
+          div.innerHTML = `
+            <div class="hotel-info">
+              <h3>${item.name}</h3>
+              <p>代码：${item.code} ｜ 销量：${item.sales}</p>
+              <p>坐标：${item.latitude}, ${item.longitude}</p>
+            </div>
+            <a class="btn" href="detail.html?hotelId=${item.id}&title=${item.name}">查看详情</a>
+          `;
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('result-list').innerHTML = `<p>搜索失败: ${err}</p>`;
+      });
+  }
+</script>
+</html>

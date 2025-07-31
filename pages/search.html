@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>酒店搜索</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 40px; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { text-align: center; margin-bottom: 20px; }
+    input, button { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #007BFF; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>酒店搜索(内部查价使用)</h2>
+    <input type="text" id="keyword" placeholder="输入目的地或酒店名" required>
+    <button onclick="doSearch()">搜索酒店</button>
+  </div>
+</body>
+
+
+<script>
+  function doSearch() {
+    const keyword = document.getElementById('keyword').value.trim();
+    if (!keyword) return alert('请输入关键词');
+    // 跳转并通过 URL 参数传给结果页
+    window.location.href = 'results.html?key=' + encodeURIComponent(keyword);
+  }
+</script>
+</html>

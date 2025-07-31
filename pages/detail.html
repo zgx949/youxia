@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>酒店详情</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 40px; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 10px; }
+    p { color: #666; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+    th { background: #f1f1f1; }
+    .price { color: #e74c3c; font-weight: bold; }
+
+    .card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header h4 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .card-header small {
+      color: #666;
+    }
+    .summary-button {
+      margin-top: 10px;
+      display: inline-block;
+      padding: 6px 12px;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+    .summary-button:hover {
+      background: #0056b3;
+    }
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .carousel img {
+      width: 240px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .amenities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .amenity {
+      background: #f3f3f3;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="hotel-name" style="text-align: center">酒店详情</h2>
+
+    <div>
+      <label>入住：</label>
+      <input type="date" id="checkin">
+      <label>离店：</label>
+      <input type="date" id="checkout">
+      <button onclick="loadDetail()">查询</button>
+    </div>
+
+    <h3>房型和价格</h3>
+    <div id="room-list"></div>
+  </div>
+
+<script>
+  function getQueryParam(name) {
+    const params = new URLSearchParams(location.search);
+    return params.get(name);
+  }
+
+  function formatCNY(val) {
+    return `¥${parseFloat(val).toFixed(2)}`;
+  }
+
+  function getToday(n = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() + n);
+    return date.toISOString().slice(0, 10);
+  }
+
+  document.getElementById('checkin').value = getToday();
+  document.getElementById('checkout').value = getToday(1);
+
+  const hotelId = getQueryParam('hotelId');
+  const title = getQueryParam('title');
+  document.getElementById('hotel-name').innerText = title;
+
+  function loadDetail() {
+    const checkin = document.getElementById('checkin').value;
+    const checkout = document.getElementById('checkout').value;
+    fetch(`http://127.0.0.1:5000/room_price?hotelId=${hotelId}&checkin=${checkin}&checkout=${checkout}`)
+      .then(res => res.json())
+      .then(data => renderRooms(data))
+      .catch(err => {
+        document.getElementById('room-list').innerHTML = '<p>查询失败</p>';
+      });
+  }
+
+  function renderRooms(data) {
+    const container = document.getElementById('room-list');
+    container.innerHTML = '';
+    data.forEach(room => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+
+      const images = (room.image || '').split(',').filter(Boolean);
+      const imageHTML = images.length
+        ? `<div class="carousel">${images.map(src => `<img src="${src}" alt="room">`).join('')}</div>`
+        : '';
+
+      let amenitiesHTML = '';
+      try {
+        const amenities = JSON.parse(room.amenities || '[]');
+        if (amenities.length) {
+          amenitiesHTML = `<div class="amenities">${amenities.map(a => `<div class="amenity">${a.text}：${a.value}</div>`).join('')}</div>`;
+        }
+      } catch (e) { amenitiesHTML = ''; }
+
+      wrapper.innerHTML = `
+        ${imageHTML}
+        <div class="card-header">
+          <div>
+            <h4>${room.name || '房型名称'}</h4>
+            <small>${room.nameEn || ''}</small>
+          </div>
+        </div>
+        ${amenitiesHTML}
+      `;
+
+      room.hotelRoomDetails.forEach((detail, idx) => {
+        const block = document.createElement('div');
+        block.style.marginLeft = '1em';
+        const breakfast = detail.breakfast ? '含早餐' : '无早餐';
+        const total = formatCNY(detail.totalPrice);
+        const rateId = detail.rateId;
+
+        block.innerHTML = `
+          <details>
+            <summary>${detail.name || '方案'}｜${breakfast}｜${total}</summary>
+            <ul>
+              ${
+                detail.payPrice?.PAY_ALL?.subList?.[0]?.subList?.map(i =>
+                  `<li>${i.title}: ${formatCNY(i.amount)}</li>`
+                ).join('') || ''
+              }
+            </ul>
+            <a href="#" class="summary-button">预订</a>
+          </details>
+        `;
+        wrapper.appendChild(block);
+      });
+
+      container.appendChild(wrapper);
+    });
+  }
+
+  loadDetail();
+</script>
+</body>
+</html>
