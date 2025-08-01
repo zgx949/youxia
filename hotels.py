@@ -1,3 +1,5 @@
+import json
+
 import config
 import copy
 
@@ -22,6 +24,33 @@ def clean_room_detail(detail):
     for key in ["interests", "rateRangeList", "paymentType", "storeExtra"]:
         detail.pop(key, None)
     return detail
+
+
+def generate_room_text(room: dict, checkin_date: str, checkout_date: str):
+    # 房型行
+    room_name = room.get("name", "未知房型")
+    room_line = f"房型：{room_name}"
+
+    # 入住天数
+    from datetime import datetime
+    d1 = datetime.strptime(checkin_date, "%Y-%m-%d")
+    d2 = datetime.strptime(checkout_date, "%Y-%m-%d")
+    nights = (d2 - d1).days
+
+    # 每种方案一行
+    price_lines = []
+    for detail in room.get("hotelRoomDetails", []):
+        total = detail.get("totalPrice", 0)
+        breakfast = "含早餐" if detail.get("breakfast") else "无早餐"
+        per_night = round(total / nights, 2) if nights else total
+        plan_name = detail.get("name", "")
+        line = f"价格：CNY {total:.2f}（{per_night:.0f}每晚）｜{breakfast}｜{plan_name}"
+        # line = f"- 价格：CNY {total:.2f}｜{breakfast}｜{plan_name}"
+        price_lines.append(line)
+
+    # 组合文本
+    final_text = "\n".join([room_line] + price_lines)
+    return final_text
 
 
 def get_room_price(hotelId: int, checkin: str, checkout: str, adultNum: int = 2):
@@ -65,5 +94,7 @@ def get_room_price(hotelId: int, checkin: str, checkout: str, adultNum: int = 2)
         if no_breakfast_room_details:
             temp_data["hotelRoomDetails"].append(no_breakfast_room_details)
         result.append(temp_data)
-
-    return result
+    result_text = ''
+    for room in result:
+        result_text += generate_room_text(room, checkin, checkout)+'\n'
+    return result_text
