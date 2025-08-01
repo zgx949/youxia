@@ -26,10 +26,11 @@
 {
     "mcpServers": {
         "youxia": {
-            "command": "uv",
+            "command": "uvx",
             "args": [
-                "run",
-                "mcp-server.py"
+                "--from",
+                "git+https://github.com/zgx949/youxia.git@main",
+                "mcp-server"
             ],
           "env": {
             "APP_KEY": "sk-your-api-key-here",
