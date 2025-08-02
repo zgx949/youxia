@@ -5,7 +5,13 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 import requests
 import os
-from dotenv import load_dotenv  # 新增
+from dotenv import load_dotenv, set_key, dotenv_values  # 新增
+from pathlib import Path
+
+# .env 文件路径
+env_path = Path(".env")
+# 加载当前的.env配置（返回一个字典）
+env_config = dotenv_values(dotenv_path=env_path)
 
 load_dotenv()
 APP_KEY = os.getenv("APP_KEY")
@@ -48,7 +54,9 @@ def get_token() -> Optional[str]:
     if response.status_code == 200:
         data = response.json()
         if data.get("code") == 0 and data.get("msg") == "SUCCESS":
-            return data["data"]
+            token = data["data"]
+            set_key(dotenv_path=env_path, key_to_set="APP_TOKEN", value_to_set=token)
+            return token
         print("获取 Token 失败：", data.get("msg"))
     else:
         print("请求失败：", response.status_code, response.text)
@@ -56,7 +64,9 @@ def get_token() -> Optional[str]:
     return None
 
 
-TOKEN = get_token()
+TOKEN = os.getenv("APP_TOKEN")
+if not TOKEN:
+    TOKEN = get_token()
 
 session = requests.Session()
 
